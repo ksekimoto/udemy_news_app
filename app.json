@@ -29,7 +29,10 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "newsApiKey": "YOUR_API_TOKEN"
+      "newsApiKey": "YOUR_API_TOKEN",
+      "eas": {
+        "projectId": "8a133139-d6e7-4c91-9f4b-e738dcf02a72"
+      }
     }
   }
 }
