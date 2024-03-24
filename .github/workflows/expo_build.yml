@@ -1,4 +1,4 @@
-name: Build Expo Project
+name: update
 
 on:
   push:
@@ -15,31 +15,34 @@ on:
         required: false
 
 jobs:
-  build:
+  update:
+    name: EAS Update
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Check for EXPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "You must provide an EXPO_TOKEN secret linked to this project's Expo account in this repo's secrets. Learn more: https://docs.expo.dev/eas-update/github-actions"
+            exit 1
+          fi
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
-          node-version: "20" # The version of Node.js that Expo CLI supports
+          node-version: 20.x
+          cache: yarn
 
-      - name: Install Expo CLI
-        run: npm install -g expo-cli
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
-        run: npm install
+        run: yarn install
 
-      - name: Replace API Token in app.json
-        run: |
-          sed -i 's/"apiToken": "YOUR_API_TOKEN"/"apiToken": "${{ secrets.API_TOKEN }}"/' app.json
-
-      - name: Login to Expo CLI
-        run: expo login --non-interactive -u ${{ secrets.EXPO_CLI_USERNAME }} -p ${{ secrets.EXPO_CLI_PASSWORD }}
-
-      - name: Build Project
-        run: expo build:android # Or expo build:ios for iOS build
-
-      - name: Logout from Expo CLI
-        run: expo logout
+      - name: Publish update
+        run: eas update --auto
