@@ -1,0 +1,36 @@
+name: Build Expo Project
+
+on:
+  push:
+    branches:
+      - main # Or any other branch you want to trigger the build on
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20" # The version of Node.js that Expo CLI supports
+
+      - name: Install Expo CLI
+        run: npm install -g expo-cli
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Replace API Token in app.json
+        run: |
+          sed -i 's/"apiToken": "YOUR_API_TOKEN"/"apiToken": "${{ secrets.API_TOKEN }}"/' app.json
+
+      - name: Login to Expo CLI
+        run: echo ${{ secrets.EXPO_CLI_PASSWORD }} | expo login -u ${{ secrets.EXPO_CLI_USERNAME }} --non-interactive
+
+      - name: Build Project
+        run: expo build:android # Or expo build:ios for iOS build
+
+      - name: Logout from Expo CLI
+        run: expo logout
